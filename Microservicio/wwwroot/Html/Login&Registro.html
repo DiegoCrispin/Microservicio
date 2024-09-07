@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="../CSs/Estilos.css">
+    <title>Login & Registro</title>
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="nav">
+            <div class="nav-button">
+                <button class="btn white-btn" id="loginBtn" onclick="login()">Iniciar Sesion</button>
+                <button class="btn" id="registerBtn" onclick="register()">Registrarse</button>
+            </div>
+            <div class="nav-menu-btn">
+                <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+            </div>
+        </nav>
+
+        <!----------------------------- Form box ----------------------------------->
+        <div class="form-box">
+
+            <!------------------- login form -------------------------->
+
+            <div class="login-container" id="login">
+                <div class="top">
+                    <span>No tienes una cuenta? <a href="#" onclick="register()">Registrate</a></span>
+                    <header>Iniciar Sesion</header>
+                </div>
+                <form id="loginForm">
+                    <div class="input-box">
+                        <input type="text" name="email" class="input-field" placeholder="Usuario o Correo" required>
+                        <i class="bx bx-user"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" class="input-field" placeholder="Contraseña" required>
+                        <i class="bx bx-lock-alt"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="submit" class="submit" value="Iniciar Sesion">
+                    </div>
+                    <div class="two-col">
+                        <div class="one">
+                            <input type="checkbox" id="login-check">
+                            <label for="login-check"> Recuerdame</label>
+                        </div>
+                        <div class="two">
+                            <label><a href="#">¿Olvidó su contraseña?</a></label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!------------------- registration form -------------------------->
+            <div class="register-container" id="register">
+                <div class="top">
+                    <span>Tienes una cuenta? <a href="#" onclick="login()">Iniciar Sesion </a></span>
+                    <header>Registrate</header>
+                </div>
+                <form id="registerForm">
+                    <div class="two-forms">
+                        <div class="input-box">
+                            <input type="text" name="nombre" class="input-field" placeholder="Nombre" required>
+                            <i class="bx bx-user"></i>
+                        </div>
+                        <div class="input-box">
+                            <input type="text" name="apellido" class="input-field" placeholder="Apellido" required>
+                            <i class="bx bx-user"></i>
+                        </div>
+                    </div>
+                    <div class="input-box">
+                        <input type="email" name="email" class="input-field" placeholder="Email" required>
+                        <i class="bx bx-envelope"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" class="input-field" placeholder="Contraseña" required>
+                        <i class="bx bx-lock-alt"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="submit" class="submit" value="Registrate">
+                    </div>
+                    <div class="two-col">
+                        <div class="one">
+                            <input type="checkbox" id="register-check">
+                            <label for="register-check">Recuerdame</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Manejar el envío del formulario de login
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    const data = {
+        email: formData.get("email"),
+        password: formData.get("password")
+    };
+
+    try {
+        const response = await fetch("http://localhost:5186/Usuario/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Inicio de sesión exitoso");
+            // Redirigir o realizar alguna acción
+        } else {
+            alert(result.message || "Error al iniciar sesión");
+        }
+    } catch (error) {
+        alert("Error de conexión con el servidor");
+    }
+});
+
+// Manejar el envío del formulario de registro
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    const data = {
+        nombre: formData.get("nombre"),
+        apellido: formData.get("apellido"),
+        email: formData.get("email"),
+        password: formData.get("password")
+    };
+
+    try {
+        const response = await fetch("http://localhost:5186/Usuario/registro", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Registro exitoso");
+            // Redirigir o realizar alguna acción
+        } else {
+            alert(result.message || "Error al registrarse");
+        }
+    } catch (error) {
+        alert("Error de conexión con el servidor");
+    }
+});
+
+function login() {
+    document.getElementById("login").style.left = "4px";
+    document.getElementById("register").style.right = "-520px";
+    document.getElementById("loginBtn").classList.add("white-btn");
+    document.getElementById("registerBtn").classList.remove("white-btn");
+}
+
+function register() {
+    document.getElementById("login").style.left = "-510px";
+    document.getElementById("register").style.right = "5px";
+    document.getElementById("loginBtn").classList.remove("white-btn");
+    document.getElementById("registerBtn").classList.add("white-btn");
+}
+    </script>
+
+</body>
+</html>
