@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anuncios</title>
+  <link rel="stylesheet" href="EstilosGeneral.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Anuncios</h2>
+        <span class="count">24</span>
+      </div>
+      <ul class="menu">
+        <li><a href="#" class="active" id="btnCrearAnuncio">Crear Anuncio</a></li>
+        <li><a href="#" id="btnVerAnuncios">Ver Anuncios</a></li>
+        <li><a href="#" id="btnEditarAnuncio">Editar Anuncio</a></li>
+        <li><a href="#" id="btnEliminarAnuncio">Eliminar Anuncio</a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <header class="header">
+        <h1>Gestión de Anuncios</h1>
+      </header>
+      <section class="announcements" id="contenidoPrincipal">
+        <!-- Aquí se cargarán los formularios y los anuncios -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal para Crear Anuncio -->
+  <div id="modalCrearAnuncio" style="display:none;">
+    <h2>Crear Anuncio</h2>
+    <form id="formCrearAnuncio">
+      <label for="titulo">Título:</label>
+      <input type="text" id="titulo" required>
+      <label for="contenido">Contenido:</label>
+      <textarea id="contenido" required></textarea>
+      <label for="urgente">Urgente:</label>
+      <select id="urgente">
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+      <label for="destacado">Destacado:</label>
+      <select id="destacado">
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+      <button type="submit">Crear Anuncio</button>
+    </form>
+  </div>
+
+  <!-- Modal para Editar Anuncio -->
+  <div id="modalEditarAnuncio" style="display:none;">
+    <h2>Editar Anuncio</h2>
+    <form id="formEditarAnuncio">
+      <label for="id">ID del Anuncio:</label>
+      <input type="number" id="idEditar" required>
+      <label for="tituloEditar">Título:</label>
+      <input type="text" id="tituloEditar" required>
+      <label for="contenidoEditar">Contenido:</label>
+      <textarea id="contenidoEditar" required></textarea>
+      <label for="urgenteEditar">Urgente:</label>
+      <select id="urgenteEditar">
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+      <label for="destacadoEditar">Destacado:</label>
+      <select id="destacadoEditar">
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+      <button type="submit">Actualizar Anuncio</button>
+    </form>
+  </div>
+
+  <!-- Modal para Eliminar Anuncio -->
+  <div id="modalEliminarAnuncio" style="display:none;">
+    <h2>Eliminar Anuncio</h2>
+    <form id="formEliminarAnuncio">
+      <label for="idEliminar">ID del Anuncio:</label>
+      <input type="number" id="idEliminar" required>
+      <button type="submit">Eliminar Anuncio</button>
+    </form>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Mostrar formulario de Crear Anuncio
+      $('#btnCrearAnuncio').click(function() {
+        $('#contenidoPrincipal').html($('#modalCrearAnuncio').html());
+      });
+  
+      // Mostrar formulario de Editar Anuncio
+      $('#btnEditarAnuncio').click(function() {
+        $('#contenidoPrincipal').html($('#modalEditarAnuncio').html());
+      });
+  
+      // Mostrar formulario de Eliminar Anuncio
+      $('#btnEliminarAnuncio').click(function() {
+        $('#contenidoPrincipal').html($('#modalEliminarAnuncio').html());
+      });
+  
+      // Mostrar todos los anuncios
+      $('#btnVerAnuncios').click(function() {
+        cargarAnuncios(); // Cargar y mostrar anuncios al hacer clic en "Ver Anuncios"
+      });
+  
+      function cargarAnuncios() {
+        $.get('http://localhost:5186/api/Anuncios', function(data) {
+          $('#contenidoPrincipal').empty(); // Limpiar la lista de anuncios
+          const anunciosLista = $('<div id="anunciosLista"></div>'); // Crear un nuevo contenedor para la lista de anuncios
+          $.each(data, function(index, anuncio) {
+            anunciosLista.append(`
+              <div class="anuncio">
+                <h3>${anuncio.titulo || "Título no disponible"}</h3>
+                <p>${anuncio.contenido || "Contenido no disponible"}</p>
+                <p><strong>Urgente:</strong> ${anuncio.urgente !== undefined ? (anuncio.urgente ? "Sí" : "No") : "No definido"}</p>
+                <p><strong>Destacado:</strong> ${anuncio.destacado !== undefined ? (anuncio.destacado ? "Sí" : "No") : "No definido"}</p>
+                <button class="btnEditar" data-id="${anuncio.id}">Editar</button>
+                <button class="btnEliminar" data-id="${anuncio.id}">Eliminar</button>
+              </div>
+            `);
+          });
+          $('#contenidoPrincipal').append(anunciosLista); // Agregar la lista de anuncios al contenido principal
+        }).fail(function() {
+          alert('Error al cargar los anuncios.');
+        });
+      }
+  
+      // Enviar formulario de Crear Anuncio
+      $(document).on('submit', '#formCrearAnuncio', function(e) {
+        e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+        const anuncio = {
+          titulo: $('#titulo').val(),
+          contenido: $('#contenido').val(),
+          urgente: $('#urgente').val() === 'true',
+          destacado: $('#destacado').val() === 'true'
+        };
+        
+        $.ajax({
+          url: 'http://localhost:5186/api/Anuncios', // URL de la API
+          type: 'POST', // Método POST
+          contentType: 'application/json', // Tipo de contenido
+          data: JSON.stringify(anuncio), // Convertir objeto a JSON
+          success: function(response) {
+            alert(response.message); // Mostrar mensaje de éxito
+            cargarAnuncios(); // Recargar anuncios después de crear uno
+            $('#contenidoPrincipal').empty(); // Limpiar el contenido principal
+          },
+          error: function(xhr, status, error) {
+            console.error(error); // Manejar errores
+            alert('Error al crear el anuncio.'); // Mostrar mensaje de error
+          }
+        });
+      });
+  
+     // Enviar formulario de Editar Anuncio
+$(document).on('submit', '#formEditarAnuncio', function(e) {
+  e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+  const anuncio = {
+    id: $('#idEditar').val(),
+    titulo: $('#tituloEditar').val(),
+    contenido: $('#contenidoEditar').val(),
+    urgente: $('#urgenteEditar').val() === 'true',
+    destacado: $('#destacadoEditar').val() === 'true'
+  };
+
+  $.ajax({
+    url: 'http://localhost:5186/api/Anuncios/' + anuncio.id, // URL de la API con el ID del anuncio
+    type: 'PUT', // Método PUT para actualización
+    contentType: 'application/json', // Tipo de contenido
+    data: JSON.stringify(anuncio), // Convertir objeto a JSON
+    success: function(response) {
+      alert(response.message); // Mostrar mensaje de éxito
+      cargarAnuncios(); // Recargar anuncios después de actualizar uno
+      $('#contenidoPrincipal').empty(); // Limpiar el contenido principal
+    },
+    error: function(xhr, status, error) {
+      console.error(error); // Manejar errores
+      alert('Error al actualizar el anuncio.'); // Mostrar mensaje de error
+    }
+  });
+});
+
+// Enviar formulario de Eliminar Anuncio
+$(document).on('submit', '#formEliminarAnuncio', function(e) {
+  e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+  const id = $('#idEliminar').val();
+
+  $.ajax({
+    url: 'http://localhost:5186/api/Anuncios/' + id, // URL de la API con el ID del anuncio
+    type: 'DELETE', // Método DELETE para eliminar
+    success: function(response) {
+      alert(response.message); // Mostrar mensaje de éxito
+      cargarAnuncios(); // Recargar anuncios después de eliminar uno
+      $('#contenidoPrincipal').empty(); // Limpiar el contenido principal
+    },
+    error: function(xhr, status, error) {
+      console.error(error); // Manejar errores
+      alert('Error al eliminar el anuncio.'); // Mostrar mensaje de error
+    }
+  });
+});
+
+  
+      // Función para manejar los botones de editar y eliminar en la lista de anuncios
+      $(document).on('click', '.btnEditar', function() {
+        const id = $(this).data('id');
+        // Cargar la información del anuncio en el formulario de edición
+        $.get('http://localhost:5186/api/Anuncios/' + id, function(data) {
+          $('#idEditar').val(data.id);
+          $('#tituloEditar').val(data.titulo);
+          $('#contenidoEditar').val(data.contenido);
+          $('#urgenteEditar').val(data.urgente);
+          $('#destacadoEditar').val(data.destacado);
+          $('#contenidoPrincipal').html($('#modalEditarAnuncio').html());
+        });
+      });
+  
+      $(document).on('click', '.btnEliminar', function() {
+        const id = $(this).data('id');
+        $('#idEliminar').val(id);
+        $('#contenidoPrincipal').html($('#modalEliminarAnuncio').html());
+      });
+    });
+  </script>
+  
+</body>
+</html>
