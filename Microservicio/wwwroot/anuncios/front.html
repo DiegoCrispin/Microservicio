@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Anuncios - Institución Educativa</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h2>Panel de Anuncios</h2>
+            <ul>
+                <li><a href="#" id="crear-link">Crear Anuncio</a></li>
+                <li><a href="#" id="ver-link">Ver Anuncios</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Sección para Crear Anuncio -->
+    <section id="crear-anuncio-section" class="container">
+        <h1>Crear Anuncio</h1>
+        <form id="anuncioForm">
+            <div class="form-group">
+                <label for="titulo">Título del Anuncio</label>
+                <input type="text" id="titulo" name="titulo" required>
+            </div>
+            <div class="form-group">
+                <label for="contenido">Contenido del Anuncio</label>
+                <textarea id="contenido" name="contenido" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="urgente">Urgente</label>
+                <input type="checkbox" id="urgente" name="urgente">
+            </div>
+            <div class="form-group">
+                <label for="destacado">Destacado</label>
+                <input type="checkbox" id="destacado" name="destacado">
+            </div>
+            <div class="form-group buttons">
+                <button type="submit" class="btn btn-primary">Publicar</button>
+                <button type="reset" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Sección para Ver Anuncios -->
+    <section id="ver-anuncios-section" class="container" style="display: none;">
+        <h1>Anuncios Publicados</h1>
+        <div id="anuncios-lista" class="anuncios-lista">
+            <!-- Los anuncios se cargarán dinámicamente aquí -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Grupo Sistemas en Corto, todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
