@@ -1,4 +1,4 @@
-﻿using Microservicio.Models; 
+﻿using Microservicio.Models;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -6,21 +6,23 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-
-
 namespace Microservicio.Controllers
 {
-    [Route("Usuario/[controller]")]
+    [Route("usuario/[controller]")]
     [ApiController]
     public class UsuarioController : ControllerBase
     {
-        private readonly string _connectionString = "Data Source=localhost;Database=Microservicios;User ID=Diego;Password=12345";
+        private readonly string _connectionString;
 
-        // Registro de usuario
+        public UsuarioController(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
         [HttpPost("registro")]
         public async Task<IActionResult> Registrar([FromBody] Usuarios usuario)
         {
-            if (usuario == null || string.IsNullOrEmpty(usuario.Password))
+            if (usuario == null || string.IsNullOrEmpty(usuario.Password) || string.IsNullOrEmpty(usuario.Correo))
             {
                 return BadRequest("Datos inválidos.");
             }
@@ -33,24 +35,26 @@ namespace Microservicio.Controllers
                 using (var con = new MySqlConnection(_connectionString))
                 {
                     await con.OpenAsync();
-                    using (var cmd = new MySqlCommand("INSERT INTO usuarios (nombre, apellido, correo, password) VALUES (@nombre, @apellido, @correo, @password)", con))
+                    using (var cmd = new MySqlCommand("INSERT INTO usuarios (nombre, apellido, correo, password, rol) VALUES (@nombre, @apellido, @correo, @password, @rol)", con))
                     {
                         cmd.Parameters.AddWithValue("@nombre", usuario.Nombre);
                         cmd.Parameters.AddWithValue("@apellido", usuario.Apellido);
                         cmd.Parameters.AddWithValue("@correo", usuario.Correo);
                         cmd.Parameters.AddWithValue("@password", hashedPassword);
+                        cmd.Parameters.AddWithValue("@rol", usuario.Rol); // Esto tomará el rol por defecto
 
                         await cmd.ExecuteNonQueryAsync();
                     }
                 }
 
-                return Ok("Usuario registrado exitosamente.");
+                return CreatedAtAction(nameof(ListarUsuarios), new { id = usuario.Correo }, "Usuario registrado exitosamente.");
             }
             catch (MySqlException ex)
             {
                 return StatusCode(500, $"Error al registrar el usuario: {ex.Message}");
             }
         }
+
 
         // Login de usuario
         [HttpPost("login")]
@@ -77,11 +81,12 @@ namespace Microservicio.Controllers
                             {
                                 usuario = new Usuarios
                                 {
-                                    Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                                    Id = reader.GetInt32("id"),
                                     Nombre = reader.GetString("nombre"),
                                     Apellido = reader.GetString("apellido"),
                                     Correo = reader.GetString("correo"),
-                                    Password = reader.GetString("password")
+                                    Password = reader.GetString("password"), // No exponer esto
+                                    Rol = reader.GetString("rol")
                                 };
                             }
                         }
@@ -93,13 +98,94 @@ namespace Microservicio.Controllers
                     return Unauthorized("Credenciales incorrectas.");
                 }
 
-                return Ok($"Bienvenido {usuario.Nombre} {usuario.Apellido}");
+                return Ok(new { mensaje = $"Bienvenido {usuario.Nombre} {usuario.Apellido}", rol = usuario.Rol }); // Devolver el rol
             }
             catch (MySqlException ex)
             {
                 return StatusCode(500, $"Error al iniciar sesión: {ex.Message}");
             }
         }
+
+
+
+        // Obtener todos los usuarios
+        [HttpGet("listar")]
+        public async Task<IActionResult> ListarUsuarios()
+        {
+            try
+            {
+                var usuarios = new List<UsuarioDto>(); // Usa un DTO aquí
+
+                using (var con = new MySqlConnection(_connectionString))
+                {
+                    await con.OpenAsync();
+                    using (var cmd = new MySqlCommand("SELECT id, nombre, apellido, correo, rol FROM usuarios", con)) // No seleccionar password
+                    {
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var usuario = new UsuarioDto
+                                {
+                                    Id = reader.GetInt32("id"),
+                                    Nombre = reader.GetString("nombre"),
+                                    Apellido = reader.GetString("apellido"),
+                                    Correo = reader.GetString("correo"),
+                                    Rol = reader.GetString("rol")
+                                };
+                                usuarios.Add(usuario);
+                            }
+                        }
+                    }
+                }
+
+                if (usuarios.Count == 0)
+                {
+                    return NotFound("No hay usuarios registrados.");
+                }
+
+                return Ok(usuarios);
+            }
+            catch (MySqlException ex)
+            {
+                return StatusCode(500, $"Error al listar usuarios: {ex.Message}");
+            }
+        }
+
+        [HttpPut("asignar-rol/{id}")]
+        public async Task<IActionResult> AsignarRol(int id, [FromBody] string nuevoRol)
+        {
+            if (string.IsNullOrEmpty(nuevoRol) || (nuevoRol != "Usuario" && nuevoRol != "Administrador" && nuevoRol != "Superusuario"))
+            {
+                return BadRequest(new { mensaje = "Rol inválido." });
+            }
+
+            try
+            {
+                using (var con = new MySqlConnection(_connectionString))
+                {
+                    await con.OpenAsync();
+                    using (var cmd = new MySqlCommand("UPDATE usuarios SET rol = @rol WHERE id = @id", con))
+                    {
+                        cmd.Parameters.AddWithValue("@rol", nuevoRol);
+                        cmd.Parameters.AddWithValue("@id", id);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        if (rowsAffected == 0)
+                        {
+                            return NotFound(new { mensaje = "Usuario no encontrado." });
+                        }
+                    }
+                }
+
+                return Ok(new { mensaje = "Rol asignado exitosamente." }); // Cambiado para devolver un objeto JSON
+            }
+            catch (MySqlException ex)
+            {
+                return StatusCode(500, new { mensaje = $"Error al asignar el rol: {ex.Message}" }); // Cambiado para devolver un objeto JSON
+            }
+        }
+
 
         // Método para encriptar la contraseña
         private string HashPassword(string password)
@@ -122,6 +208,16 @@ namespace Microservicio.Controllers
             string hashedInputPassword = HashPassword(password);
             return hashedInputPassword == hashedPassword;
         }
+    }
+
+    // DTO para la respuesta de listar usuarios
+    public class UsuarioDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Correo { get; set; }
+        public string Rol { get; set; }
     }
 
     // Modelo para la petición de login

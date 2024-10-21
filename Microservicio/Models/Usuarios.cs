@@ -4,20 +4,14 @@ namespace Microservicio.Models
 {
     public class Usuarios
     {
-        [Key]
         public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Correo { get; set; }
+        public string Password { get; set; }
 
-        [Required]
-        public required string Nombre { get; set; }
-
-        [Required]
-        public required string Apellido { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public  required string Correo { get; set; }
-
-        [Required]
-        public required string Password { get; set; }
+        // Asigna el rol por defecto como 'Usuario'
+        public string Rol { get; set; } = "Usuario"; // Rol por defecto
     }
+
 }
