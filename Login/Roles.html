@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignación de Roles</title>
+    <link rel="stylesheet" href="Estilosusuarios.css">
+    <style>
+        .hidden {
+            display: none; /* Clase para ocultar elementos */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Roles</h2>
+                <div class="count" id="roles-count">3</div>
+            </div>
+            <ul class="menu">
+                <li class="title">Menú</li>
+                <li><a href="#" id="btnAsignarRol">Asignar Rol</a></li>
+                <li><a href="#" id="btnVerUsuarios">Ver Usuarios</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div id="assign-role-container" class="hidden">
+                <h2>Asignar Rol a Usuario</h2>
+                <form id="assign-role-form">
+                    <label for="usuarioId">ID de Usuario:</label>
+                    <input type="number" id="usuarioId" name="usuarioId" required>
+
+                    <label for="rol">Rol:</label>
+                    <input type="text" id="rol" name="rol" placeholder="Ingrese 'Usuario' o 'Administrador'" required>
+
+                    <button type="submit">Asignar Rol</button>
+                </form>
+                <div id="response-message"></div>
+            </div>
+
+            <div id="usuarios-container" class="hidden">
+                <h2>Usuarios Registrados</h2>
+                <table id="usuarios-table" class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuarios-list">
+                        <tr>
+                            <td colspan="5">No hay usuarios registrados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:5186/usuario/';
+
+        // Función para obtener y mostrar usuarios
+        async function obtenerUsuarios() {
+            try {
+                const response = await fetch(`${apiUrl}Usuario/listar`);
+                const usuarios = await response.json();
+                const usuariosList = document.getElementById('usuarios-list');
+                usuariosList.innerHTML = ''; // Limpiar lista antes de mostrar nuevos usuarios
+
+                if (usuarios.length === 0) {
+                    usuariosList.innerHTML = '<tr><td colspan="5">No hay usuarios registrados.</td></tr>';
+                } else {
+                    usuarios.forEach(usuario => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${usuario.id}</td>
+                            <td>${usuario.nombre}</td>
+                            <td>${usuario.apellido}</td>
+                            <td>${usuario.correo}</td>
+                            <td>${usuario.rol}</td>
+                        `;
+                        usuariosList.appendChild(row);
+                    });
+                }
+
+                // Mostrar la tabla de usuarios
+                document.getElementById('usuarios-table').style.display = 'table'; // Mostrar la tabla
+
+            } catch (error) {
+                console.error('Error al obtener usuarios:', error);
+            }
+        }
+
+        // Mostrar sección de asignar rol
+        document.getElementById('btnAsignarRol').addEventListener('click', function() {
+            document.getElementById('assign-role-container').classList.remove('hidden');
+            document.getElementById('usuarios-container').classList.add('hidden');
+        });
+
+        // Mostrar sección de ver usuarios
+        document.getElementById('btnVerUsuarios').addEventListener('click', function() {
+            obtenerUsuarios(); // Cargar usuarios
+            document.getElementById('usuarios-container').classList.remove('hidden'); // Mostrar tabla de usuarios
+            document.getElementById('assign-role-container').classList.add('hidden'); // Ocultar sección de asignar rol
+        });
+
+        // Asignar rol a usuario
+        document.getElementById('assign-role-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Evita recargar la página
+
+            const usuarioId = document.getElementById('usuarioId').value;
+            const rol = document.getElementById('rol').value.trim(); // Eliminar espacios al inicio y al final
+
+            // Validar que el rol sea 'Usuario', 'Administrador' o 'Superusuario'
+            if (rol !== "Usuario" && rol !== "Administrador" && rol !== "Superusuario") {
+                document.getElementById('response-message').innerHTML = 'Error: El rol debe ser "Usuario", "Administrador" o "Superusuario".';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}Usuario/asignar-rol/${usuarioId}`, {
+                    method: 'PUT', // Cambiado de POST a PUT
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rol) // Pasar solo el rol
+                });
+
+                // Verificar la respuesta del servidor
+                if (!response.ok) {
+                    const errorText = await response.text(); // Leer la respuesta como texto
+                    const errorResult = JSON.parse(errorText); // Intenta convertir el texto a JSON
+                    throw new Error(errorResult.message || 'Error en la asignación del rol.');
+                }
+
+                document.getElementById('response-message').innerHTML = 'Rol asignado exitosamente.';
+                document.getElementById('usuarioId').value = ''; // Limpiar campo
+                document.getElementById('rol').value = ''; // Limpiar campo
+
+                // Actualizar la lista de usuarios después de asignar un rol
+                obtenerUsuarios(); 
+
+            } catch (error) {
+                console.error('Error al asignar el rol:', error);
+                document.getElementById('response-message').innerHTML = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

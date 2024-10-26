@@ -14,7 +14,7 @@
         <span class="count">24</span>
       </div>
       <ul class="menu">
-        <li><a href="#" id="btnDestacados">Anuncios Destacados</a></li>
+        <li><a href="#" id="btnDestacados" class="active">Anuncios Destacados</a></li>
         <li><a href="#" id="btnUrgentes">Anuncios Urgentes</a></li>
       </ul>
     </aside>
@@ -52,9 +52,11 @@
             const anuncioElement = document.createElement('article');
             anuncioElement.classList.add('announcement');
             anuncioElement.innerHTML = `
-              <i class="icon">i</i>
-              <h4>${anuncio.titulo || 'Sin título'}</h4>
-              <p>${anuncio.contenido || 'Sin contenido disponible.'}</p>
+              <div class="icon">📢</div>
+              <div>
+                <h4>${anuncio.titulo || 'Sin título'}</h4>
+                <p>${anuncio.contenido || 'Sin contenido disponible.'}</p>
+              </div>
             `;
             announcementsContainer.appendChild(anuncioElement);
           });
@@ -69,18 +71,17 @@
 
     // Event listeners para los enlaces
     document.getElementById('btnDestacados').addEventListener('click', (e) => {
-      e.preventDefault(); // Prevenir la acción predeterminada del enlace
+      e.preventDefault();
       mostrarAnuncios('destacados');
     });
 
     document.getElementById('btnUrgentes').addEventListener('click', (e) => {
-      e.preventDefault(); // Prevenir la acción predeterminada del enlace
+      e.preventDefault();
       mostrarAnuncios('urgentes');
     });
 
     // Mostrar anuncios destacados al cargar la página
     mostrarAnuncios('destacados');
   </script>
-
 </body>
 </html>

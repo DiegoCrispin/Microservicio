@@ -1,0 +1,146 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f2f3f5;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #e6e1ec;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-header h2 {
+  font-size: 18px;
+  color: #5c5c5c;
+}
+
+.sidebar-header .count {
+  background-color: #d3c2f3;
+  border-radius: 50%;
+  padding: 5px 10px;
+  color: #5c5c5c;
+}
+
+.menu {
+  list-style: none;
+}
+
+.menu li {
+  margin-bottom: 10px;
+}
+
+.menu li.title {
+  font-size: 14px;
+  color: #b5b5b5;
+  margin: 20px 0 10px;
+}
+
+.menu li a {
+  text-decoration: none;
+  font-size: 16px;
+  color: #5c5c5c;
+  display: block;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+
+.menu li a.active,
+.menu li a:hover {
+  background-color: #d3c2f3;
+  color: #fff;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 20px 0 0 20px;
+}
+
+h2 {
+  font-size: 20px;
+  color: #5c5c5c;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #5c5c5c;
+}
+
+input[type="number"],
+input[type="text"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+button {
+  background-color: #d3c2f3;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #b5a4db;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.users-table th,
+.users-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+  color: #5c5c5c;
+}
+
+.users-table th {
+  background-color: #d3c2f3;
+  color: #fff;
+}
+
+.users-table td {
+  background-color: #f9f9f9;
+}
+
+.users-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+#response-message {
+  margin-top: 15px;
+  font-size: 16px;
+  color: #5c5c5c;
+}

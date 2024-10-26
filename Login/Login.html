@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="Estilos.css">
     <title>Login & Registro</title>
 </head>
-<body>
+<body> 
     <div class="wrapper">
         <nav class="nav">
             <div class="nav-button">
@@ -52,7 +52,7 @@
                 </form>
             </div>
 
-            <!------------------- registration form -------------------------->
+            <!------------------- registration form --------------------------> 
             <div class="register-container" id="register">
                 <div class="top">
                     <span>¿Ya tienes una cuenta? <a href="#" onclick="login()">Inicia Sesión</a></span>
@@ -106,21 +106,20 @@
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://localhost:5186/Usuario/Usuario/registro', { // Ajusta la ruta aquí
+                const response = await fetch('http://localhost:5186/usuario/usuario/registro', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ nombre, apellido, correo, password }),
+                    body: JSON.stringify({ nombre, apellido, correo, password })
                 });
 
                 if (response.ok) {
                     const result = await response.text();
-                    window.location.href = "/AnunciosGeneral.html"; // Redirige a la página
-                    alert(result);
+                    alert(result); // Muestra mensaje de éxito
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    const error = await response.json();
+                    alert('Error: ' + error.errors.Rol.join(", ")); // Muestra errores específicos
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -136,21 +135,35 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch('http://localhost:5186/Usuario/Usuario/login', { // Ajusta la ruta aquí
+                const response = await fetch('http://localhost:5186/usuario/usuario/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ correo, password }),
+                    body: JSON.stringify({ correo, password })
                 });
 
                 if (response.ok) {
-                    const result = await response.text();
-                    window.location.href = "/AnunciosGeneral.html"; // Redirige a la página
-                    alert(result);
+                    const result = await response.json(); // Cambiado para obtener el JSON
+                    alert(`Bienvenido ${result.nombre} ${result.apellido} - Rol: ${result.rol}`);
+                    
+                    // Redirigir según el rol
+                    switch (result.rol) {
+                        case "Administrador":
+                            window.location.href = "/AnunciosGeneral.html"; // Página de administrador
+                            break;
+                        case "Usuario":
+                            window.location.href = "/Anuncios.html"; // Página de usuario
+                            break;
+                        case "Superusuario":
+                            window.location.href = "/Roles.html"; // Página de superusuario
+                            break;
+                        default:
+                            alert('Rol desconocido');
+                    }
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    const error = await response.json();
+                    alert('Error: ' + error.message); // Muestra mensaje de error
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -173,8 +186,6 @@
         document.getElementById("loginBtn").classList.remove("white-btn");
         document.getElementById("registerBtn").classList.add("white-btn");
     }
-
     </script>
 </body>
 </html>
-
